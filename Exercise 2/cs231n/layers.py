@@ -23,8 +23,10 @@ def affine_forward(x, w, b):
   # will need to reshape the input into rows.                                 #
   #############################################################################
   
-  xf = x.reshape(x.shape[0], -1)
-  out = xf.dot(w) + b
+  # xf = x.reshape(x.shape[0], -1)
+  # out = xf.dot(w) + b
+  N = x.shape[0]
+  out = x.reshape(N, np.prod(x.shape[1:])).dot(w)+b
 
   #############################################################################
   #                             END OF YOUR CODE                              #
@@ -54,11 +56,15 @@ def affine_backward(dout, cache):
   # TODO: Implement the affine backward pass.                                 #
   #############################################################################
   
-  xf = x.reshape(x.shape[0], -1)
-  dx = dout.dot(w.T).reshape(x.shape)
+  # xf = x.reshape(x.shape[0], -1)
+  # dx = dout.dot(w.T).reshape(x.shape)
 
-  dw = xf.T.dot(dout)
-  db = np.sum(dout, axis=0, keepdims=True)
+  # dw = xf.T.dot(dout)
+  # db = np.sum(dout, axis=0, keepdims=True)
+  N = x.shape[0]
+  dx = dout.dot(w.T).reshape(x.shape)
+  dw = x.reshape(N, np.prod(x.shape[1:])).T.dot(dout)
+  db = np.sum(dout, axis=0)
   
   #############################################################################
   #                             END OF YOUR CODE                              #
@@ -378,7 +384,32 @@ def max_pool_backward_naive(dout, cache):
   #############################################################################
   # TODO: Implement the max pooling backward pass                             #
   #############################################################################
-  pass
+
+  x, pool_param = cache
+  N, C, H, W = x.shape
+
+  pool_height = pool_param['pool_height']
+  pool_width = pool_param['pool_width']
+  stride = pool_param['stride']
+
+  H_prime = 1 + (H - pool_height) / stride
+  W_prime = 1 + (W - pool_width) / stride
+
+  dx = np.zeros(shape=(N, C, H, W))
+
+  for n in xrange(N):
+    for c in xrange(C):
+      for h in xrange(H_prime):
+        hs = h * stride
+        for w in xrange(W_prime):
+          ws = w * stride
+
+          window = x[n, c, hs:hs+pool_height, ws:ws+pool_width]
+
+          m = np.max(window)
+
+          dx[n, c, hs:hs+pool_height, ws:ws+pool_width] = (m == window) * dout[n, c, h, w]
+
   #############################################################################
   #                             END OF YOUR CODE                              #
   #############################################################################
