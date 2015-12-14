@@ -270,28 +270,42 @@ def conv_backward_naive(dout, cache):
   #############################################################################
   # TODO: Implement the convolutional backward pass.                          #
   #############################################################################
+
   x, w, b, conv_param = cache
   N, C, H, W = x.shape
   F, C, HH, WW = w.shape
+  
   pad = conv_param['pad']
   stride = conv_param['stride']
+
   H_prime = 1 + (H + 2 * pad - HH) / stride
   W_prime = 1 + (W + 2 * pad - WW) / stride
 
-  for ni in xrange(N):
-    image = np.pad(x[ni], [(0,0), (pad,pad), (pad,pad)], 'constant')
 
-    for wi in xrange(W_prime):
+  dx = np.zeros_like(x)
+  dw = np.zeros_like(w)
+  db = np.zeros_like(b)
 
-      for hi in xrange(H_prime):
+  x_padded = np.pad(x, [(0,0), (0,0), (pad,pad), (pad,pad)], 'constant')
+  dx_padded = np.pad(dx, [(0,0), (0,0), (pad,pad), (pad,pad)], 'constant')
 
-        for fi in xrange(F):
-          window = image[:, hi*stride:hi*stride+HH, wi*stride:wi*stride+WW]
+  for n in xrange(N):
+    for f in xrange(F):
+      for hp in xrange(H_prime):
+        hs = hp*stride
 
-          dw[fi] += window * dout[ni, fi, hi, wi]
-          dx[ni, :, hi*stride:hi*stride+HH, wi*stride:wi*stride+WW] += w[fi] * dout[ni, fi, hi, wi]
+        for wp in xrange(W_prime):
+          ws = wp*stride
 
-  db = np.sum(dout)
+          window = x_padded[n, :, hs:hs+HH, ws:ws+WW]
+
+          dx_padded[n,:,hs:hs+HH,ws:ws+WW] += w[f] * dout[n,f,hp,wp]
+
+          dw[f] += window * dout[n,f,hp,wp]
+          db[f] += dout[n,f,hp,wp]
+
+  dx = dx_padded[:, :, pad:-pad, pad:-pad]
+
   #############################################################################
   #                             END OF YOUR CODE                              #
   #############################################################################
@@ -317,7 +331,31 @@ def max_pool_forward_naive(x, pool_param):
   #############################################################################
   # TODO: Implement the max pooling forward pass                              #
   #############################################################################
-  pass
+  
+  N, C, H, W = x.shape
+
+  pool_height = pool_param['pool_height']
+  pool_width = pool_param['pool_width']
+  stride = pool_param['stride']
+
+  H_prime = 1 + (H - pool_height) / stride
+  W_prime = 1 + (W - pool_width) / stride
+
+  out = np.zeros(shape=(N, C, H_prime, W_prime))
+
+  for n in xrange(N):
+    for c in xrange(C):
+      for h in xrange(H_prime):
+        hs = h * stride
+
+        for w in xrange(W_prime):
+          ws = w * stride
+
+          window = x[n, c, hs:hs+pool_height, ws:ws+pool_width]
+
+          out[n, c, h, w] = np.max(window)
+
+
   #############################################################################
   #                             END OF YOUR CODE                              #
   #############################################################################
