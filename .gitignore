@@ -1,3 +1,8 @@
+cuda-7.5
+project/caffe-rc2
 datasets
+*.mdb
+*.binaryproto
+
 *.pyc
 .ipynb_checkpoints
