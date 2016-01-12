@@ -1,0 +1,16 @@
+net: "net/architecture.prototxt"
+
+test_iter: 20
+test_interval: 500
+
+base_lr: 0.00001
+momentum: 0.9
+weight_decay: 0.004
+
+lr_policy: "fixed"
+display: 100
+max_iter: 30000
+snapshot: 2000
+snapshot_prefix: "snapshots/snapshot"
+
+solver_mode: GPU

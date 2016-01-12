@@ -12,7 +12,7 @@ layer {
   }
   data_param {
     source: "net/train-db"
-    batch_size: 100
+    batch_size: 500
     backend: LMDB
   }
 }
@@ -29,7 +29,7 @@ layer {
   }
   data_param {
     source: "net/test-db"
-    batch_size: 100
+    batch_size: 500
     backend: LMDB
   }
 }
